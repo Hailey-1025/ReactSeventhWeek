@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Modal } from "bootstrap";
 
 import Pagination from "../component/Pagination";
 import ProductModal from "../component/ProductModal";
 import DelProductModal from "../component/DelProductModal";
+import Toast from "../component/Toast";
 
 const { VITE_BASE_URL, VITE_API_URL } = import.meta.env;
 
@@ -21,11 +21,21 @@ const defaultModalState = {
   imagesUrl: [""],
 };
 
-function ProductPage() {
+function ProductPage({setIsAuth}) {
   const [products, setProducts] = useState([]);
   const [modalMode, setModalMode] = useState(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isDelProductModalOpen, setIsDelProductModalOpen] = useState(false);
+
+  // 登出
+  const handleLogout = async () => {
+    try {
+      await axios.post(`${VITE_BASE_URL}/v2/logout`);
+      setIsAuth(false);
+    } catch (error) {
+      alert("登出失敗");
+    }
+  };
 
   // 取得產品資料
   const getProducts = async (page = 1) => {
@@ -64,7 +74,7 @@ function ProductPage() {
   // 開啟刪除 modal
   const handleOpenDelProductModal = (product) => {
     setTempProduct(product);
-    setIsDelProductModalOpen(true)
+    setIsDelProductModalOpen(true);
   };
 
   const [tempProduct, setTempProduct] = useState(defaultModalState);
@@ -77,6 +87,13 @@ function ProductPage() {
   return (
     <>
       <div className="container py-5">
+        <div className="row mb-3">
+          <div className="justify-content-end">
+            <button type="button" className="btn btn-secondary" onClick={handleLogout}>
+              登出
+            </button>
+          </div>
+        </div>
         <div className="row">
           {/* 產品頁面 */}
           <div className="col">
@@ -159,6 +176,8 @@ function ProductPage() {
         setIsOpen={setIsDelProductModalOpen}
         tempProduct={tempProduct}
       />
+
+      <Toast />
     </>
   );
 }

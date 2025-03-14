@@ -1,18 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Modal } from "bootstrap";
+import { useDispatch } from "react-redux";
+import { pushMessage } from "../redux/toastSlice";
 
 const { VITE_BASE_URL, VITE_API_URL } = import.meta.env;
 
-
-function ProductModal({ modalMode, tempProduct, isProductModalOpen, setIsProductModalOpen, getProducts }) {
+function ProductModal({
+  modalMode,
+  tempProduct,
+  isProductModalOpen,
+  setIsProductModalOpen,
+  getProducts,
+}) {
   const [modalData, setModalData] = useState(tempProduct);
-  
+  const dispatch = useDispatch();
+
   useEffect(() => {
     setModalData({
-        ...tempProduct,
-    })
-  },[tempProduct])
+      ...tempProduct,
+    });
+  }, [tempProduct]);
 
   const productModalRef = useRef(null);
 
@@ -21,17 +29,17 @@ function ProductModal({ modalMode, tempProduct, isProductModalOpen, setIsProduct
   }, []);
 
   useEffect(() => {
-    if(isProductModalOpen){
-        const modalInstance = Modal.getInstance(productModalRef.current)
-        modalInstance.show()
+    if (isProductModalOpen) {
+      const modalInstance = Modal.getInstance(productModalRef.current);
+      modalInstance.show();
     }
-  },[isProductModalOpen])
+  }, [isProductModalOpen]);
 
   // 關閉 modal
   const handleCloseProductModal = () => {
     const modalInstance = Modal.getInstance(productModalRef.current);
     modalInstance.hide();
-    setIsProductModalOpen(false)
+    setIsProductModalOpen(false);
   };
 
   const handleModalInputChange = (e) => {
@@ -84,7 +92,14 @@ function ProductModal({ modalMode, tempProduct, isProductModalOpen, setIsProduct
         }
       );
     } catch (error) {
-      alert("新增產品失敗");
+      // alert("新增產品失敗");
+      const {message} = error.response.data
+      dispatch(
+        pushMessage({
+          text: message.join("、"),
+          status: "failed",
+        })
+      );
     }
   };
 
@@ -101,14 +116,20 @@ function ProductModal({ modalMode, tempProduct, isProductModalOpen, setIsProduct
           },
         }
       );
+      dispatch(
+        pushMessage({
+          text: '編輯產品成功',
+          status: "success",
+        })
+      );
     } catch (error) {
       alert("編輯產品失敗");
     }
   };
 
   const handleUpdateProduct = async () => {
-    const apiCall = modalMode === "create" ? createProduct : updateProduct;
     try {
+      const apiCall = modalMode === "create" ? createProduct : updateProduct;
       await apiCall();
       getProducts();
       handleCloseProductModal();
@@ -227,9 +248,8 @@ function ProductModal({ modalMode, tempProduct, isProductModalOpen, setIsProduct
                   ))}
                   <div className="btn-group w-100">
                     {modalData.imagesUrl.length < 5 &&
-                      modalData.imagesUrl[
-                        modalData.imagesUrl.length - 1
-                      ] !== "" && (
+                      modalData.imagesUrl[modalData.imagesUrl.length - 1] !==
+                        "" && (
                         <button
                           onClick={handleAddImage}
                           type="button"

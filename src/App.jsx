@@ -8,7 +8,7 @@ function App() {
 
   return (
     <>
-      {isAuth ? <ProductPage /> : <LoginPage setIsAuth={setIsAuth} />}
+      {isAuth ? <ProductPage setIsAuth={setIsAuth} /> : <LoginPage setIsAuth={setIsAuth} />}
     </>
   );
 }
